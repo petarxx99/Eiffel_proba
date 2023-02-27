@@ -1,0 +1,6 @@
+http://www.cs.yorku.ca/~jonathan/eiffel_public/Vision2_tutorial/Eiffel%20Vision%20Calculator.pdf
+
+https://www.eiffel.org/doc/eiffelstudio/Graphics-based_Design
+
+klase
+https://www.eiffel.org/files/doc/static/22.12/libraries/vision2/index.html
