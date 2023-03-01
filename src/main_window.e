@@ -23,7 +23,19 @@ inherit
 		end
 
 create
-	default_create
+	make_with_power_raiser
+
+
+feature
+	make_with_power_raiser(injected_power_raiser: NUMBER_RAISER) is
+			-- Constructor which takes in an interface which calculates one integer to the power of another one.
+			do
+				power_raiser := injected_power_raiser;
+				default_create;
+			end
+
+feature {NONE}
+	power_raiser: NUMBER_RAISER;
 
 feature {NONE} -- Initialization
 
@@ -209,33 +221,36 @@ feature {NONE} -- Implementation
 			end
 
 
-		create_widgets_for_calculator
+	create_widgets_for_calculator
 			-- create text fields, label and checkbox for operator
 			require
 				nothing: True
 
 			local
-				plus, minus, multiply, divide: EV_LIST_ITEM;
+				plus, minus, multiply, divide, to_the_power: EV_LIST_ITEM;
 			do
-
 				create first_number_field.make_with_text("First");
 				create second_number_field.make_with_text("Second");
 				create result_label;
-
 				create operator;
+
 				create plus.make_with_text(plus_sign_text);
 				create minus.make_with_text(minus_sign_text);
 				create multiply.make_with_text(multiply_sign_text);
 				create divide.make_with_text(divide_sign_text);
+				create to_the_power.make_with_text(to_the_power_of);
+				create button_to_calculate.make_with_text("Click here to calculate");
+
 				operator.extend(plus);
 				operator.extend(minus);
 				operator.extend(multiply);
 				operator.extend(divide);
+				operator.extend(to_the_power);
 
-				create button_to_calculate.make_with_text("Click here to calculate");
 				ensure
-					there_are_4_operators: operator.count = 4
+					there_are_5_operators: operator.count = 5
 			end
+
 
 
 	calculate_user_input
@@ -245,7 +260,7 @@ feature {NONE} -- Implementation
 			result_of_operation: String;
 			selected_item: detachable EV_LIST_ITEM;
 			operator_as_string: String;
-			text_from_field_1, text_from_field_2: String;
+			text_from_field_1, text_from_field_2: String_32;
 			do
 				text_from_field_1 := first_number_field.text;
 				text_from_field_1.trim;
@@ -261,12 +276,15 @@ feature {NONE} -- Implementation
 				else
 					operator_as_string := selected_item.text.to_string_8;
 
+-- There needs to be elseif, not else if. If you write else if you will need another end to close the additional if block.
 					if operator_as_string.is_equal(plus_sign_text) then
-						result_of_operation := (number_1 + number_2).out;
+						result_of_operation := (number_1 + number_2).out
 					elseif operator_as_string.is_equal(minus_sign_text) then
-						result_of_operation := (number_1 - number_2).out;
+						result_of_operation := (number_1 - number_2).out
 					elseif operator_as_string.is_equal(multiply_sign_text) then
-						result_of_operation := (number_1 * number_2).out;
+						result_of_operation := (number_1 * number_2).out
+					elseif operator_as_string.is_equal(to_the_power_of) then
+						result_of_operation := (power_raiser.raise_to_the_power(number_1, number_2)).out
 					else
 						if number_2 = 0 then
 							result_of_operation := "You can't divide by 0.";
@@ -293,7 +311,7 @@ feature {NONE} -- Implementation
 			main_container.extend (create {EV_TEXT})
 			create label_info.make_with_text("Write your numbers below");
 			main_container.extend(label_info);
-			
+
 			first_number_field.set_minimum_width (control_width);
 			main_container.extend (first_number_field);
 
@@ -342,4 +360,6 @@ feature {NONE} -- Implementation / Constants
 	multiply_sign_text: String = "*"
 
 	divide_sign_text: String = "/"
+
+	to_the_power_of: String = "to the power of"
 end
