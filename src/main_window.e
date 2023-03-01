@@ -39,6 +39,9 @@ feature {NONE} -- Initialization
 				-- Create help menu.
 			create help_menu.make_with_text (Menu_help_item)
 
+			-- create widgets for calculator such as text fields, labels etc.
+			create_widgets_for_calculator
+
 		end
 
 	initialize
@@ -52,7 +55,6 @@ feature {NONE} -- Initialization
 
 			build_main_container
 			extend (main_container)
-
 
 				-- Execute `request_close_window' when the user clicks
 				-- on the cross in the title bar.
@@ -176,7 +178,7 @@ feature {NONE} -- Implementation, Close event
 			if question_dialog.selected_button ~ (create {EV_DIALOG_CONSTANTS}).ev_ok then
 					-- Destroy the window.
 				destroy
-				
+
 					-- End the application.
 					--| TODO: Remove next instruction if you don't want the application
 					--|       to end when the first window is closed..
@@ -188,13 +190,130 @@ feature {NONE} -- Implementation, Close event
 
 feature {NONE} -- Implementation
 
+	first_number_field: EV_TEXT_FIELD;
+	second_number_field: EV_TEXT_FIELD;
+	operator: EV_COMBO_BOX;
+	result_label: EV_LABEL;
+	button_to_calculate: EV_BUTTON;
+
+	set_widget_size(control: EV_WIDGET; height_to_set, width_to_set: INTEGER)
+			-- setting width and height to a widget
+			require control_is_not_void: control /= Void
+			do
+				control.set_minimum_height(height_to_set);
+				control.set_minimum_width(width_to_set);
+
+				ensure
+					control_width_is_set_ok: control.width >= width_to_set
+					control_height_is_set_ok: control.height >= height_to_set
+			end
+
+
+		create_widgets_for_calculator
+			-- create text fields, label and checkbox for operator
+			require
+				nothing: True
+
+			local
+				plus, minus, multiply, divide: EV_LIST_ITEM;
+			do
+
+				create first_number_field.make_with_text("First");
+				create second_number_field.make_with_text("Second");
+				create result_label;
+
+				create operator;
+				create plus.make_with_text(plus_sign_text);
+				create minus.make_with_text(minus_sign_text);
+				create multiply.make_with_text(multiply_sign_text);
+				create divide.make_with_text(divide_sign_text);
+				operator.extend(plus);
+				operator.extend(minus);
+				operator.extend(multiply);
+				operator.extend(divide);
+
+				create button_to_calculate.make_with_text("Click here to calculate");
+				ensure
+					there_are_4_operators: operator.count = 4
+			end
+
+
+	calculate_user_input
+			-- Based on the numbers that user has entered and the operation that he has requested, we will display the result
+			local
+			number_1, number_2: INTEGER;
+			result_of_operation: String;
+			selected_item: detachable EV_LIST_ITEM;
+			operator_as_string: String;
+			text_from_field_1, text_from_field_2: String;
+			do
+				text_from_field_1 := first_number_field.text;
+				text_from_field_1.trim;
+				text_from_field_2 := second_number_field.text;
+				text_from_field_2.trim;
+
+				number_1 := text_from_field_1.to_integer;
+				number_2 := text_from_field_2.to_integer;
+				selected_item := operator.selected_item;
+
+				if selected_item = Void then
+					result_label.set_text("You haven't chosen an operation")
+				else
+					operator_as_string := selected_item.text.to_string_8;
+
+					if operator_as_string.is_equal(plus_sign_text) then
+						result_of_operation := (number_1 + number_2).out;
+					elseif operator_as_string.is_equal(minus_sign_text) then
+						result_of_operation := (number_1 - number_2).out;
+					elseif operator_as_string.is_equal(multiply_sign_text) then
+						result_of_operation := (number_1 * number_2).out;
+					else
+						if number_2 = 0 then
+							result_of_operation := "You can't divide by 0.";
+						else
+							result_of_operation := (number_1 / number_2).out;
+						end
+					end
+
+					result_label.set_text(result_of_operation.out);
+				end
+
+				first_number_field.set_text("");
+				second_number_field.set_text("");
+			end
+
+
 	main_container: EV_VERTICAL_BOX
 			-- Main container (contains all widgets displayed in this window).
 
 	build_main_container
 			-- Populate `main_container'.
+			local label_info: EV_LABEL
 		do
 			main_container.extend (create {EV_TEXT})
+			create label_info.make_with_text("Write your numbers below");
+			main_container.extend(label_info);
+			
+			first_number_field.set_minimum_width (control_width);
+			main_container.extend (first_number_field);
+
+			operator.set_minimum_width(control_width);
+			main_container.extend(operator);
+
+			second_number_field.set_minimum_width (control_width);
+			main_container.extend (second_number_field);
+
+			button_to_calculate.set_minimum_width (control_width);
+			-- The following line of code can't be called from create_objects_interface or any procedure inside that procedure.
+			-- The reason is that apparently the following line of code requires the Current to be in a valid state.
+			-- If the following line of code is called from create_objects_interface then Current isn't yet in a valid state.
+			-- At least that's what I extrapulated from this answer and from compiler errors.
+			-- https://stackoverflow.com/questions/54163214/eiffel-error-variable-is-not-properly-set-in-make-calling-default-create-or-a
+			button_to_calculate.select_actions.extend(agent calculate_user_input);
+			main_container.extend(button_to_calculate);
+
+			result_label.set_minimum_width(control_width);
+			main_container.extend(result_label);
 		ensure
 			main_container_created: main_container /= Void
 		end
@@ -210,4 +329,17 @@ feature {NONE} -- Implementation / Constants
 	Window_height: INTEGER = 400
 			-- Initial height for this window.
 
+	control_height: INTEGER = 50
+			-- Initial height of controls
+
+	control_width: INTEGER = 20
+			-- Initial width of controls
+
+	plus_sign_text: String = "+"
+
+	minus_sign_text: String = "-"
+
+	multiply_sign_text: String = "*"
+
+	divide_sign_text: String = "/"
 end
