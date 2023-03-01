@@ -27,7 +27,7 @@ create
 
 
 feature
-	make_with_power_raiser(injected_power_raiser: NUMBER_RAISER) is
+	make_with_power_raiser(injected_power_raiser: NUMBER_RAISER)
 			-- Constructor which takes in an interface which calculates one integer to the power of another one.
 			do
 				power_raiser := injected_power_raiser;
@@ -208,6 +208,8 @@ feature {NONE} -- Implementation
 	result_label: EV_LABEL;
 	button_to_calculate: EV_BUTTON;
 
+	info_displayer, info_displayer_2: EV_TEXT_FIELD;
+
 	set_widget_size(control: EV_WIDGET; height_to_set, width_to_set: INTEGER)
 			-- setting width and height to a widget
 			require control_is_not_void: control /= Void
@@ -229,8 +231,13 @@ feature {NONE} -- Implementation
 			local
 				plus, minus, multiply, divide, to_the_power: EV_LIST_ITEM;
 			do
-				create first_number_field.make_with_text("First");
-				create second_number_field.make_with_text("Second");
+				create info_displayer.make_with_text("Write your numbers below.");
+				info_displayer.disable_edit;
+				create info_displayer_2.make_with_text("If you are raising a number to the power, you must use integers.");
+				info_displayer_2.disable_edit;
+
+				create first_number_field.make_with_text("");
+				create second_number_field.make_with_text("");
 				create result_label;
 				create operator;
 
@@ -306,11 +313,11 @@ feature {NONE} -- Implementation
 
 	build_main_container
 			-- Populate `main_container'.
-			local label_info: EV_LABEL
 		do
 			main_container.extend (create {EV_TEXT})
-			create label_info.make_with_text("Write your numbers below");
-			main_container.extend(label_info);
+
+			main_container.extend(info_displayer);
+			main_container.extend(info_displayer_2);
 
 			first_number_field.set_minimum_width (control_width);
 			main_container.extend (first_number_field);
@@ -363,3 +370,4 @@ feature {NONE} -- Implementation / Constants
 
 	to_the_power_of: String = "to the power of"
 end
+
