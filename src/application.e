@@ -11,6 +11,7 @@ create
 	make_and_launch
 
 -- Dobar sajt. https://eiffel-guide.com/
+-- Jos jedan dobar sajt https://www.eiffel.org/files/doc/static/22.12/libraries/vision2/index.html
 feature
 	prva_procedura
 		local
@@ -31,7 +32,7 @@ feature {NONE} -- Initialization
 
 	make_and_launch
 		local
-			l_app: EV_APPLICATION
+			l_app: EV_APPLICATION;
 		do
 			prva_procedura;
 			create l_app
@@ -50,9 +51,13 @@ feature {NONE} -- Initialization
 			-- Prepare the first window to be displayed.
 			-- Perform one call to first window to avoid
 			-- violation of the invariant of class EV_APPLICATION.
+			local
+				power_raiser: NUMBER_RAISER_WITH_LOOP;
 		do
+			-- create an object which raises one integer to the power of another one.
+			create power_raiser;
 				-- create and initialize the first window.
-			create first_window
+			create first_window.make_with_power_raiser(power_raiser);
 
 				-- Show the first window.
 				--| TODO: Remove this line if you don't want the first
